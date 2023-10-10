@@ -17,19 +17,19 @@ ROTORS = [
     Rotor(
         key="BDFHJLCPRTXVZNYEIWGAKMUSQO",  # III
         notch="Z",
-        initial_top="A",
+        current_top="Y",
     ),
     # middle rotor
     Rotor(
         key="AJDKSIRUXBLHWTMCQGZNPYFVOE",  # II
         notch="Z",
-        initial_top="A",
+        current_top="A",
     ),
     # left-most rotor
     Rotor(
         key="EKMFLGDQVZNTOWYHXUSPAIBRCJ",  # I
         notch="A",
-        initial_top="A",
+        current_top="A",
     ),
 ]
 
@@ -61,8 +61,11 @@ if __name__ == "__main__":
             log_encryption(letter, PLUGBOARD.encrypt_letter(letter), "plugboard")
             letter = PLUGBOARD.encrypt_letter(letter)
 
+            # TODO remove debugging prints
+            print(ROTORS[0].current_top)
             # right-most rotor turns on every key press
             ROTORS[0].turn()
+            print(ROTORS[0].current_top)
 
             # encrypt letter
             for rotor in ROTORS:

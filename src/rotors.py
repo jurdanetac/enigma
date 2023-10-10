@@ -1,5 +1,13 @@
 from dataclasses import dataclass
 
+from string import ascii_uppercase
+
+
+def next_char_in_string(string: str, letter: str) -> str:
+    """TODO"""
+    return string[(string.index(letter) + 1) % len(string)]
+
+
 @dataclass
 class StaticRotor:
     """TODO"""
@@ -18,7 +26,7 @@ class Rotor(StaticRotor):
 
     key: str  # substitution key
     notch: str  # turnover
-    initial_top: str  # initial letter on top
+    current_top: str  # initial letter on top
 
     def __post_init__(self):
         """Inherit StaticRotor key and encrypt_letter method"""
@@ -27,6 +35,10 @@ class Rotor(StaticRotor):
 
     def turn(self) -> None:
         """TODO"""
+
+        # Update current letter on top of the rotor
+        self.current_top = next_char_in_string(ascii_uppercase, self.current_top)
+        # Rotate key by one
         self.key = self.key[-1] + self.key[:-1]
 
     def reverse_encrypt_letter(self, letter) -> str:
