@@ -57,15 +57,23 @@ if __name__ == "__main__":
             # keep track of how many layers of encryption a letter pass
             ENCRYPTIONS = 0
 
+            # TODO remove debugging prints
+            for rotor in reversed(ROTORS):
+                print(rotor.current_top, end="")
+            print()
+
+            # TODO remove debugging prints
+            # right-most rotor turns on every key press
+            ROTORS[0].turn()
+
+            # TODO remove debugging prints
+            for rotor in reversed(ROTORS):
+                print(rotor.current_top, end="")
+            print()
+
             # substitute letter in plugboard
             log_encryption(letter, PLUGBOARD.encrypt_letter(letter), "plugboard")
             letter = PLUGBOARD.encrypt_letter(letter)
-
-            # TODO remove debugging prints
-            print(ROTORS[0].current_top)
-            # right-most rotor turns on every key press
-            ROTORS[0].turn()
-            print(ROTORS[0].current_top)
 
             # encrypt letter
             for rotor in ROTORS:
