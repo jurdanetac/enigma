@@ -12,7 +12,8 @@ def next_char_in_string(string: str, letter: str) -> str:
 class StaticRotor:
     """TODO"""
 
-    key: str  # substitution key
+    # substitution key
+    key: str
 
     def encrypt_letter(self, letter) -> str:
         """TODO"""
@@ -24,9 +25,12 @@ class StaticRotor:
 class Rotor(StaticRotor):
     """TODO"""
 
-    key: str  # substitution key
-    notch: str  # turnover
-    current_top: str  # initial letter on top
+    # substitution key
+    key: str
+    # turnover
+    notch: str
+    # initial letter on top
+    current_top: str
 
     def __post_init__(self):
         """Inherit StaticRotor key and encrypt_letter method"""
@@ -43,4 +47,5 @@ class Rotor(StaticRotor):
 
     def reverse_encrypt_letter(self, letter) -> str:
         """TODO"""
+
         return chr(self.key.index(letter) + 65)

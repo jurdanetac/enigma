@@ -6,11 +6,13 @@ from string import ascii_uppercase
 
 from rotors import StaticRotor, Rotor
 
+# no plugs
+PLUGBOARD = StaticRotor(key="ABCDEFGHIJKLMNOPQRSTUVWXYZ")
 
-PLUGBOARD = StaticRotor(key="ABCDEFGHIJKLMNOPQRSTUVWXYZ")  # no plugs
-
-REFLECTOR = StaticRotor(key="EJMZALYXVBWFCRQUONTSPIKHGD")  # I
-# REFLECTOR = StaticRotor(key="YRUHQSLDPXNGOKMIEBFZCWVJAT")  # II
+# I
+REFLECTOR = StaticRotor(key="EJMZALYXVBWFCRQUONTSPIKHGD")
+# II
+# REFLECTOR = StaticRotor(key="YRUHQSLDPXNGOKMIEBFZCWVJAT")
 
 ROTORS = [
     # right-most rotor
@@ -81,7 +83,8 @@ if __name__ == "__main__":
                 try:
                     if rotor.current_top == rotor.notch and ROTORS[rotor_index + 1]:
                         ROTORS[rotor_index + 1].turn()
-                except IndexError:  # no next rotor
+                # no next rotor
+                except IndexError:
                     pass
 
                 log_encryption(letter, rotor.encrypt_letter(letter), "rotor")
