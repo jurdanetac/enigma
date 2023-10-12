@@ -16,19 +16,19 @@ ROTORS = [
     # right-most rotor
     Rotor(
         key="BDFHJLCPRTXVZNYEIWGAKMUSQO",  # III
-        notch="Z",
-        current_top="Y",
+        notch="V",
+        current_top="T",
     ),
     # middle rotor
     Rotor(
         key="AJDKSIRUXBLHWTMCQGZNPYFVOE",  # II
-        notch="Z",
+        notch="E",
         current_top="A",
     ),
     # left-most rotor
     Rotor(
         key="EKMFLGDQVZNTOWYHXUSPAIBRCJ",  # I
-        notch="A",
+        notch="Q",
         current_top="A",
     ),
 ]
@@ -76,8 +76,13 @@ if __name__ == "__main__":
             letter = PLUGBOARD.encrypt_letter(letter)
 
             # encrypt letter
-            for rotor in ROTORS:
-                # TODO turn other rotors
+            for rotor_index, rotor in enumerate(ROTORS):
+                # turn other rotors when current rotor notch is on top
+                try:
+                    if rotor.current_top == rotor.notch and ROTORS[rotor_index + 1]:
+                        ROTORS[rotor_index + 1].turn()
+                except IndexError:  # no next rotor
+                    pass
 
                 log_encryption(letter, rotor.encrypt_letter(letter), "rotor")
                 letter = rotor.encrypt_letter(letter)
