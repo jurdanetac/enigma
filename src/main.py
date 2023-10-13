@@ -3,6 +3,7 @@
 """TODO"""
 
 import sys
+from string import ascii_uppercase
 
 from rotors import StaticRotor, Rotor
 
@@ -51,6 +52,11 @@ if __name__ == "__main__":
             CYPHERTEXT: str = ""
 
             for letter_count, letter in enumerate(PLAINTEXT):
+                # not a letter
+                if letter not in ascii_uppercase:
+                    CYPHERTEXT += letter
+                    continue
+
                 TOPS: str = "".join([rotor.current_top for rotor in reversed(ROTORS)])
                 TOPS_ASCII: str = " ".join([f"{(ord(top) - 64)}" for top in TOPS])
 
