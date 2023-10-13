@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
-import sys
+"""TODO"""
 
-from string import ascii_uppercase
+import sys
 
 from rotors import StaticRotor, Rotor
 
@@ -43,16 +43,16 @@ if __name__ == "__main__":
     # handle exit signals
     try:
         # keep track of how many layers of encryption a letter pass
-        encryptions = 1
+        ENCRYPTIONS = 1
 
         while True:
             # input prompt
-            plaintext = input("> ").strip().upper()
-            cyphertext = ""
+            PLAINTEXT = input("> ").strip().upper()
+            CYPHERTEXT = ""
 
-            for letter_count, letter in enumerate(plaintext):
-                tops = "".join([rotor.current_top for rotor in reversed(ROTORS)])
-                tops_ascii = " ".join([f"{(ord(top) - 64)}" for top in tops])
+            for letter_count, letter in enumerate(PLAINTEXT):
+                TOPS = "".join([rotor.current_top for rotor in reversed(ROTORS)])
+                TOPS_ASCII = " ".join([f"{(ord(top) - 64)}" for top in TOPS])
 
                 # right-most rotor turns on every key press
                 ROTORS[0].turn()
@@ -83,16 +83,16 @@ if __name__ == "__main__":
                 # substitute letter in plugboard
                 cypher_letter = PLUGBOARD.encrypt_letter(cypher_letter)
 
-                cyphertext += cypher_letter
+                CYPHERTEXT += cypher_letter
 
                 print(
-                    f"{encryptions:03} {letter} > {ROTORS[0].key[:ROTORS[0].key.index(letter)]}({letter}){ROTORS[0].key[ROTORS[0].key.index(letter):]} {tops} {tops_ascii}"
+                    f"{ENCRYPTIONS:03} {letter} > {ROTORS[0].key[:ROTORS[0].key.index(letter)]}({letter}){ROTORS[0].key[ROTORS[0].key.index(letter):]} {TOPS} {TOPS_ASCII}"
                 )
 
-                encryptions += 1
+                ENCRYPTIONS += 1
 
-            print(cyphertext)
+            print(CYPHERTEXT)
 
     # Ctrl-C / Ctrl-D
-    except:
+    except (KeyboardInterrupt, EOFError):
         sys.exit(0)
