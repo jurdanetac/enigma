@@ -8,16 +8,16 @@ from rotors import StaticRotor, Rotor
 
 
 # no plugs
-PLUGBOARD = StaticRotor(key="ABCDEFGHIJKLMNOPQRSTUVWXYZ")
+PLUGBOARD: StaticRotor = StaticRotor(key="ABCDEFGHIJKLMNOPQRSTUVWXYZ")
 
 # I
 # REFLECTOR = StaticRotor(key="EJMZALYXVBWFCRQUONTSPIKHGD")
 # B
-REFLECTOR = StaticRotor(key="YRUHQSLDPXNGOKMIEBFZCWVJAT")
+REFLECTOR: StaticRotor = StaticRotor(key="YRUHQSLDPXNGOKMIEBFZCWVJAT")
 # II
 # REFLECTOR = StaticRotor(key="YRUHQSLDPXNGOKMIEBFZCWVJAT")
 
-ROTORS = [
+ROTORS: list[Rotor] = [
     # right-most rotor
     Rotor(
         key="BDFHJLCPRTXVZNYEIWGAKMUSQO",  # III
@@ -43,22 +43,22 @@ if __name__ == "__main__":
     # handle exit signals
     try:
         # keep track of how many layers of encryption a letter pass
-        ENCRYPTIONS = 1
+        ENCRYPTIONS: int = 1
 
         while True:
             # input prompt
-            PLAINTEXT = input("> ").strip().upper()
-            CYPHERTEXT = ""
+            PLAINTEXT: str = input("> ").strip().upper()
+            CYPHERTEXT: str = ""
 
             for letter_count, letter in enumerate(PLAINTEXT):
-                TOPS = "".join([rotor.current_top for rotor in reversed(ROTORS)])
-                TOPS_ASCII = " ".join([f"{(ord(top) - 64)}" for top in TOPS])
+                TOPS: str = "".join([rotor.current_top for rotor in reversed(ROTORS)])
+                TOPS_ASCII: str = " ".join([f"{(ord(top) - 64)}" for top in TOPS])
 
                 # right-most rotor turns on every key press
                 ROTORS[0].turn()
 
                 # substitute letter in plugboard
-                cypher_letter = PLUGBOARD.encrypt_letter(letter)
+                cypher_letter: str = PLUGBOARD.encrypt_letter(letter)
 
                 # encrypt letter
                 for rotor_index, rotor in enumerate(ROTORS):
@@ -71,17 +71,17 @@ if __name__ == "__main__":
                         pass
 
                     # rotor encryption
-                    cypher_letter = rotor.encrypt_letter(cypher_letter)
+                    cypher_letter: str = rotor.encrypt_letter(cypher_letter)
 
                 # reflect letter
-                cypher_letter = REFLECTOR.encrypt_letter(cypher_letter)
+                cypher_letter: str = REFLECTOR.encrypt_letter(cypher_letter)
 
                 # current flowing in reverse direction
                 for rotor in reversed(ROTORS):
-                    cypher_letter = rotor.reverse_encrypt_letter(cypher_letter)
+                    cypher_letter: str = rotor.reverse_encrypt_letter(cypher_letter)
 
                 # substitute letter in plugboard
-                cypher_letter = PLUGBOARD.encrypt_letter(cypher_letter)
+                cypher_letter: str = PLUGBOARD.encrypt_letter(cypher_letter)
 
                 CYPHERTEXT += cypher_letter
 
