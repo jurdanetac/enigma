@@ -31,11 +31,17 @@ class Rotor(StaticRotor):
     notch: str
     # initial letter on top
     current_top: str
+    # wiring offset
+    ring_setting: str
 
     def __post_init__(self):
         """Inherit StaticRotor key and encrypt_letter method"""
 
         super().__init__(self.key)
+
+        for _ in range(ord(self.ring_setting) - 65):
+            # Take in count ring setting offset
+            self.key = self.key[1:] + self.key[0]
 
     def turn(self) -> None:
         """TODO"""
