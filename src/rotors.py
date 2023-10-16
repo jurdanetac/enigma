@@ -35,12 +35,17 @@ class Rotor(StaticRotor):
     ring_setting: str
 
     def __post_init__(self):
-        """Inherit StaticRotor key and encrypt_letter method"""
+        """Perform after-initialization rotor tasks"""
 
+        # Inherit StaticRotor key and encrypt_letter method
         super().__init__(self.key)
 
+        # Change position of alphabet ring
         for _ in range(ord(self.ring_setting) - 65):
-            # Take in count ring setting offset
+            # Each character means first character encrypts to the nth position
+            # The ring setting will rotate the wiring. Where rotor I in the
+            # A-position normally encodes an A into an E, with a ring setting
+            # offset B-02 it will be encoded into K
             self.key = self.key[1:] + self.key[0]
 
     def turn(self) -> None:
