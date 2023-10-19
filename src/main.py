@@ -23,19 +23,22 @@ ROTORS: list[Rotor] = [
     Rotor(
         key="BDFHJLCPRTXVZNYEIWGAKMUSQO",  # III
         notch="V",
-        current_top="A",
+        current_top="T",
+        ring_setting="A",
     ),
     # middle rotor
     Rotor(
         key="AJDKSIRUXBLHWTMCQGZNPYFVOE",  # II
         notch="E",
-        current_top="A",
+        current_top="D",
+        ring_setting="A",
     ),
     # left-most rotor
     Rotor(
         key="EKMFLGDQVZNTOWYHXUSPAIBRCJ",  # I
         notch="Q",
         current_top="A",
+        ring_setting="A",
     ),
 ]
 
@@ -57,8 +60,14 @@ if __name__ == "__main__":
                     CYPHERTEXT += letter
                     continue
 
-                TOPS: str = "".join([rotor.current_top for rotor in reversed(ROTORS)])
-                TOPS_ASCII: str = " ".join([f"{(ord(top) - 64)}" for top in TOPS])
+                # TODO make rotor turning dynamic
+                # turn other rotors when current rotor notch is on top
+                if ROTORS[1].current_top == ROTORS[1].notch:
+                    ROTORS[1].turn()
+                    ROTORS[2].turn()
+
+                if ROTORS[0].current_top == ROTORS[0].notch:
+                    ROTORS[1].turn()
 
                 # right-most rotor turns on every key press
                 ROTORS[0].turn()
@@ -66,17 +75,8 @@ if __name__ == "__main__":
                 # substitute letter in plugboard
                 cypher_letter: str = PLUGBOARD.encrypt_letter(letter)
 
-                # encrypt letter
-                for rotor_index, rotor in enumerate(ROTORS):
-                    # turn other rotors when current rotor notch is on top
-                    try:
-                        if rotor.current_top == rotor.notch and ROTORS[rotor_index + 1]:
-                            ROTORS[rotor_index + 1].turn()
-                    # no next rotor
-                    except IndexError:
-                        pass
-
-                    # rotor encryption
+                # rotor encryption
+                for rotor in ROTORS:
                     cypher_letter: str = rotor.encrypt_letter(cypher_letter)
 
                 # reflect letter
@@ -91,6 +91,10 @@ if __name__ == "__main__":
 
                 CYPHERTEXT += cypher_letter
 
+                TOPS: str = "".join([rotor.current_top for rotor in reversed(ROTORS)])
+                TOPS_ASCII: str = " ".join([f"{(ord(top) - 64)}" for top in TOPS])
+
+                # TODO put correct key
                 print(
                     f"{ENCRYPTIONS:03} {letter} > {ROTORS[0].key[:ROTORS[0].key.index(letter)]}({letter}){ROTORS[0].key[ROTORS[0].key.index(letter):]} {TOPS} {TOPS_ASCII}"
                 )
