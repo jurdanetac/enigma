@@ -49,6 +49,7 @@ def quit_safely(func) -> Callable:
 
     def aux() -> None:
         """Auxiliary function"""
+
         # handle exit signals
         try:
             func()
@@ -61,18 +62,20 @@ def quit_safely(func) -> Callable:
 
 @quit_safely
 def main() -> None:
+    """Main program execution"""
+
     # keep track of how many layers of encryption a letter pass
-    ENCRYPTIONS: int = 1
+    encryptions: int = 1
 
     while True:
         # input prompt
-        PLAINTEXT: str = input("> ").strip().upper()
-        CYPHERTEXT: str = ""
+        plaintext: str = input("> ").strip().upper()
+        cyphertext: str = ""
 
-        for letter in PLAINTEXT:
+        for letter in plaintext:
             # not a letter
             if letter not in ascii_uppercase:
-                CYPHERTEXT += letter
+                cyphertext += letter
                 continue
 
             # TODO make rotor turning dynamic
@@ -104,19 +107,19 @@ def main() -> None:
             # substitute letter in plugboard
             cypher_letter: str = PLUGBOARD.encrypt_letter(cypher_letter)
 
-            CYPHERTEXT += cypher_letter
+            cyphertext += cypher_letter
 
-            TOPS: str = "".join([rotor.current_top for rotor in reversed(ROTORS)])
-            TOPS_ASCII: str = " ".join([f"{(ord(top) - 64)}" for top in TOPS])
+            tops: str = "".join([rotor.current_top for rotor in reversed(ROTORS)])
+            tops_ascii: str = " ".join([f"{(ord(top) - 64)}" for top in tops])
 
             # TODO put correct key
             print(
-                f"{ENCRYPTIONS:03} {letter} > {ROTORS[0].key[:ROTORS[0].key.index(letter)]}({letter}){ROTORS[0].key[ROTORS[0].key.index(letter):]} {TOPS} {TOPS_ASCII}"
+                f"{encryptions:03} {letter} > {ROTORS[0].key[:ROTORS[0].key.index(letter)]}({letter}){ROTORS[0].key[ROTORS[0].key.index(letter):]} {tops} {tops_ascii}"
             )
 
-            ENCRYPTIONS += 1
+            encryptions += 1
 
-        print(CYPHERTEXT)
+        print(cyphertext)
 
 
 if __name__ == "__main__":
