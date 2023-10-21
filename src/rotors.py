@@ -8,6 +8,31 @@ def next_char_in_string(string: str, letter: str) -> str:
     return string[(string.index(letter) + 1) % len(string)]
 
 
+@dataclass(frozen=True)
+class DefaultKeys:
+    ROTORS = {
+        "I": {"key": "EKMFLGDQVZNTOWYHXUSPAIBRCJ", "notch": "Q"},
+        "II": {"key": "AJDKSIRUXBLHWTMCQGZNPYFVOE", "notch": "E"},
+        "III": {"key": "BDFHJLCPRTXVZNYEIWGAKMUSQO", "notch": "V"},
+        "IV": {"key": "ESOVPZJAYQUIRHXLNFTGKDCMWB", "notch": "J"},
+        "V": {"key": "VZBRGITYUPSDNHLXAWMJQOFECK", "notch": "Z"},
+        # TODO
+        # "VI": {"key": "JPGVOUMFYQBENHZRDKASXLICTW", "notch": ""},
+        # "VII": {"key": "NZJHGRCXMYSWBOUFAIVLPEKQDT", "notch": ""},
+        # "VIII": {"key": "FKQHTLXOCBJSPDZRAMEWNIUYGV", "notch": ""},
+    }
+
+    PLUGBOARD = {"empty": "ABCDEFGHIJKLMNOPQRSTUVWXYZ"}
+
+    REFLECTORS = {
+        "A": "EJMZALYXVBWFCRQUONTSPIKHGD",
+        "B": "YRUHQSLDPXNGOKMIEBFZCWVJAT",
+        "C": "FVPJIAOYEDRZXWGCTKUQSBNMHL",
+        "B Thin": "ENKQAUYWJICOPBLMDXZVFTHRGS",
+        "C Thin": "RDOBJNTKVEHMLFCWZAXGYIPSUQ",
+    }
+
+
 @dataclass
 class StaticRotor:
     """TODO"""

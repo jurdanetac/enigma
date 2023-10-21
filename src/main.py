@@ -6,14 +6,7 @@ import sys
 from typing import Callable
 from machine import Enigma
 
-from rotors import StaticRotor, Rotor
-
-
-# I
-# REFLECTOR = StaticRotor(key="EJMZALYXVBWFCRQUONTSPIKHGD")
-# B
-# II
-# REFLECTOR = StaticRotor(key="YRUHQSLDPXNGOKMIEBFZCWVJAT")
+from rotors import StaticRotor, Rotor, DefaultKeys
 
 
 def quit_safely(func) -> Callable:
@@ -40,31 +33,28 @@ def main() -> None:
         rotors=[
             # right-most rotor
             Rotor(
-                key="BDFHJLCPRTXVZNYEIWGAKMUSQO",  # III
-                notch="V",
+                key=DefaultKeys.ROTORS["III"]["key"],
+                notch=DefaultKeys.ROTORS["III"]["notch"],
                 current_top="T",
                 ring_setting="A",
             ),
             # middle rotor
             Rotor(
-                key="AJDKSIRUXBLHWTMCQGZNPYFVOE",  # II
-                notch="E",
+                key=DefaultKeys.ROTORS["II"]["key"],
+                notch=DefaultKeys.ROTORS["II"]["notch"],
                 current_top="D",
                 ring_setting="A",
             ),
             # left-most rotor
-            # I
             Rotor(
-                key="EKMFLGDQVZNTOWYHXUSPAIBRCJ",
-                notch="Q",
+                key=DefaultKeys.ROTORS["I"]["key"],
+                notch=DefaultKeys.ROTORS["I"]["notch"],
                 current_top="A",
                 ring_setting="A",
             ),
         ],
-        # no plugs
-        plugboard=StaticRotor(key="ABCDEFGHIJKLMNOPQRSTUVWXYZ"),
-        #
-        reflector=StaticRotor(key="YRUHQSLDPXNGOKMIEBFZCWVJAT"),
+        plugboard=StaticRotor(key=DefaultKeys.PLUGBOARD["empty"]),
+        reflector=StaticRotor(key=DefaultKeys.REFLECTORS["B"]),
     )
 
     while True:

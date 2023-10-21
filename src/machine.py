@@ -32,6 +32,7 @@ class Enigma:
                 continue
 
             # TODO make rotor turning dynamic
+            # TODO support double notch
             # turn other rotors when current rotor notch is on top
             if self.rotors[1].current_top == self.rotors[1].notch:
                 self.rotors[1].turn()
