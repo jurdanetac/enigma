@@ -40,7 +40,7 @@ class StaticRotor:
     # substitution key
     key: str
 
-    def encrypt_letter(self, letter) -> str:
+    def encrypt_letter(self, letter: str) -> str:
         """TODO"""
 
         return self.key[ord(letter) - 65]
@@ -59,7 +59,7 @@ class Rotor(StaticRotor):
     # wiring offset
     ring_setting: str
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """Perform after-initialization rotor tasks"""
 
         # Inherit StaticRotor key and encrypt_letter method
@@ -81,7 +81,7 @@ class Rotor(StaticRotor):
         # Rotate key by one
         self.key = self.key[-1] + self.key[:-1]
 
-    def reverse_encrypt_letter(self, letter) -> str:
+    def reverse_encrypt_letter(self, letter: str) -> str:
         """TODO"""
 
         return chr(self.key.index(letter) + 65)

@@ -3,13 +3,13 @@
 """TODO"""
 
 import sys
-from typing import Callable
+from typing import Any, Callable
 from machine import Enigma
 
 from rotors import StaticRotor, Rotor, DefaultKeys
 
 
-def quit_safely(func) -> Callable:
+def quit_safely(func: Callable[..., Any]) -> Callable[..., Any]:
     """Handle KeyboardInterrupt and EOFError on interactive programs"""
 
     def aux() -> None:
