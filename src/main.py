@@ -62,7 +62,7 @@ def main() -> None:
         plaintext: str = input("> ").strip().upper()
         cyphertext: str = machine.encrypt(plaintext=plaintext, verbose=True)
 
-        print(cyphertext)
+        print(cyphertext, end="\n\n")
 
 
 if __name__ == "__main__":
