@@ -1,3 +1,5 @@
+"""TODO"""
+
 from dataclasses import dataclass
 
 from string import ascii_uppercase
@@ -10,13 +12,15 @@ def next_char_in_string(string: str, letter: str) -> str:
 
 @dataclass(frozen=True)
 class DefaultKeys:
+    """TODO"""
+
     ROTORS = {
         "I": {"key": "EKMFLGDQVZNTOWYHXUSPAIBRCJ", "notch": "Q"},
         "II": {"key": "AJDKSIRUXBLHWTMCQGZNPYFVOE", "notch": "E"},
         "III": {"key": "BDFHJLCPRTXVZNYEIWGAKMUSQO", "notch": "V"},
         "IV": {"key": "ESOVPZJAYQUIRHXLNFTGKDCMWB", "notch": "J"},
         "V": {"key": "VZBRGITYUPSDNHLXAWMJQOFECK", "notch": "Z"},
-        # TODO
+        # TODO implement other rotors
         # "VI": {"key": "JPGVOUMFYQBENHZRDKASXLICTW", "notch": ""},
         # "VII": {"key": "NZJHGRCXMYSWBOUFAIVLPEKQDT", "notch": ""},
         # "VIII": {"key": "FKQHTLXOCBJSPDZRAMEWNIUYGV", "notch": ""},
