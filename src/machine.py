@@ -132,6 +132,10 @@ class Enigma:
                 output: str = f"{self.encryptions:03} {letter} > {fmt_key} {''.join(tops)} {''.join(tops_positions)}"
                 print(output)
 
+            # increment encrypted-letter count by one
             self.encryptions += 1
+
+            # reset key to prevent wrong carryover to the next encryption
+            key = ascii_uppercase
 
         return cyphertext
