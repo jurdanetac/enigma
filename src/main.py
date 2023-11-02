@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+# pylint: disable=locally-disabled, fixme, line-too-long
+
 """TODO"""
 
 import sys
