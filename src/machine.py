@@ -90,26 +90,26 @@ class Enigma:
 
         cypher_letter: str = letter
 
-        r: int = 0
+        current_rotor: int = 0
 
         for i, key in enumerate(keys_used[:-1]):
             cypher_letter = key[ord(cypher_letter) - 65]
             indicator: str = ""
 
             # plugboard
-            if i == 0 or i == len(keys_used) - 2:
+            if i in (0, len(keys_used) - 2):
                 indicator = "P"
             # rotors first pass
             elif i < len(self.rotors) + 1:
-                r += 1
-                indicator = str(r)
+                current_rotor += 1
+                indicator = str(current_rotor)
             # reflector
             elif i == len(self.rotors) + 1:
                 indicator = "R"
             # rotors second pass
             else:
-                indicator = str(r)
-                r -= 1
+                indicator = str(current_rotor)
+                current_rotor -= 1
 
             print(
                 f"  {self._fmt_key(key=key, cypher_letter=cypher_letter, indicator=indicator)}"
@@ -140,9 +140,10 @@ class Enigma:
         self.rotors[0].turn()
 
     def encrypt_wrapper(self, plaintext: str, verbose: bool = False) -> str:
+        """TODO"""
+
         # input prompt
         cyphertext: str = ""
-        final_key: str = ""
 
         for letter in plaintext:
             # not a letter
@@ -176,7 +177,7 @@ class Enigma:
         cypher_letter: str = self.plugboard.encrypt_letter(letter)
 
         # rotor encryption
-        for i, rotor in enumerate(self.rotors):
+        for rotor in self.rotors:
             # update key for rotor-rotor mapping
             cypher_letter: str = rotor.encrypt_letter(cypher_letter)
 
@@ -184,7 +185,7 @@ class Enigma:
         cypher_letter: str = self.reflector.encrypt_letter(cypher_letter)
 
         # current flowing in reverse direction
-        for i, rotor in enumerate(reversed(self.rotors)):
+        for rotor in reversed(self.rotors):
             # update key for reflector-rotor mapping
             cypher_letter: str = rotor.reverse_encrypt_letter(cypher_letter)
 
