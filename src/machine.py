@@ -5,6 +5,7 @@
 from dataclasses import dataclass
 from io import StringIO
 from string import ascii_uppercase
+from typing import Callable
 
 from rotors import Rotor, StaticRotor
 
@@ -22,33 +23,46 @@ class Enigma:
 
     def _get_keys(self) -> list[str]:
         """TODO"""
-
         # list of used keys throughout encryption of letter
         keys_used: list[str] = []
 
-        key = self.plugboard.get_key()
-        keys_used.append(key)
+        def update_keys(getter_func: Callable) -> None:
+            """Update used keys list by appending the return value of the passed function"""
+
+            key = getter_func()
+            keys_used.append(key)
+
+        def get_resulting_key() -> str:
+            """Get resulting key after applying all layers of encryption"""
+
+            final_key: str = ""
+
+            for letter in ascii_uppercase:
+                # Pass each alphabet letter by all layers of encryption
+                # to get the resulting key in that particular machine state
+                final_key += self._encrypt_letter(letter)
+
+            return final_key
+
+        # append plugboard key
+        update_keys(getter_func=self.plugboard.get_key)
 
         for rotor in self.rotors:
-            key = rotor.get_key()
-            keys_used.append(key)
+            # append rotor n key
+            update_keys(getter_func=rotor.get_key)
 
-        key = self.reflector.get_key()
-        keys_used.append(key)
+        # append reflector key
+        update_keys(getter_func=self.reflector.get_key)
 
         for rotor in reversed(self.rotors):
-            key = rotor.reverse_get_key()
-            keys_used.append(key)
+            # append rotor n key backwards
+            update_keys(getter_func=rotor.reverse_get_key)
 
-        key = self.plugboard.get_key()
-        keys_used.append(key)
+        # append plugboard key
+        update_keys(getter_func=self.plugboard.get_key)
 
-        final_key: str = ""
-
-        for letter in ascii_uppercase:
-            final_key += self._encrypt_letter(letter)
-
-        keys_used.append(final_key)
+        # append resulting key
+        update_keys(getter_func=get_resulting_key)
 
         return keys_used
 
