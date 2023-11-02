@@ -60,7 +60,7 @@ def main() -> None:
     while True:
         # input prompt
         plaintext: str = input(">>> ").strip().upper()
-        cyphertext: str = machine.encrypt(plaintext=plaintext, verbose=True)
+        cyphertext: str = machine.encrypt_wrapper(plaintext=plaintext, verbose=True)
 
         print(cyphertext, end="\n\n")
 
