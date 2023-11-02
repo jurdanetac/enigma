@@ -26,7 +26,10 @@ class DefaultKeys:
         # "VIII": {"key": "FKQHTLXOCBJSPDZRAMEWNIUYGV", "notch": ""},
     }
 
-    PLUGBOARD = {"empty": "ABCDEFGHIJKLMNOPQRSTUVWXYZ"}
+    PLUGBOARD = {
+        "empty": "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+        "test": "CBADEIGHFJKLMNOPQRSTUVWXYZ",
+    }
 
     REFLECTORS = {
         "A": "EJMZALYXVBWFCRQUONTSPIKHGD",
@@ -48,6 +51,18 @@ class StaticRotor:
         """TODO"""
 
         return self.key[ord(letter) - 65]
+
+    def get_key(self) -> str:
+        """Get rotor's character mappings"""
+
+        # hold output in another variable, since python strings are immutable
+        new_key: str = ""
+
+        for letter in ascii_uppercase:
+            # case current flowing backwards, rotors after reflector
+            new_key += self.encrypt_letter(letter)
+
+        return new_key
 
 
 @dataclass
@@ -89,3 +104,15 @@ class Rotor(StaticRotor):
         """TODO"""
 
         return chr(self.key.index(letter) + 65)
+
+    def reverse_get_key(self) -> str:
+        """Get rotor's character mappings when current's flowing backwards"""
+
+        # hold output in another variable, since python strings are immutable
+        new_key: str = ""
+
+        for letter in ascii_uppercase:
+            # case current flowing backwards, rotors after reflector
+            new_key += self.reverse_encrypt_letter(letter)
+
+        return new_key

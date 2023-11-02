@@ -20,24 +20,37 @@ class Enigma:
     # keep track of how many layers of encryption a letter pass
     encryptions: int = 1
 
-    def _get_key(
-        self,
-        rotor: StaticRotor | Rotor,  # rotor to use
-        reverse: bool = False,  # whether the current is flowing back
-    ) -> str:
-        """Get the character mappings for a given rotor"""
+    def _get_keys(self) -> list[str]:
+        """TODO"""
 
-        # hold output in another variable, since python strings are immutable
-        new_key: str = ""
+        # list of used keys throughout encryption of letter
+        keys_used: list[str] = []
 
-        for key_letter in ascii_uppercase:
-            # case current flowing backwards, rotors after reflector
-            if reverse and isinstance(rotor, Rotor):
-                new_key += rotor.reverse_encrypt_letter(key_letter)
-            else:
-                new_key += rotor.encrypt_letter(key_letter)
+        key = self.plugboard.get_key()
+        keys_used.append(key)
 
-        return new_key
+        for rotor in self.rotors:
+            key = rotor.get_key()
+            keys_used.append(key)
+
+        key = self.reflector.get_key()
+        keys_used.append(key)
+
+        for rotor in reversed(self.rotors):
+            key = rotor.reverse_get_key()
+            keys_used.append(key)
+
+        key = self.plugboard.get_key()
+        keys_used.append(key)
+
+        final_key: str = ""
+
+        for letter in ascii_uppercase:
+            final_key += self._encrypt_letter(letter)
+
+        keys_used.append(final_key)
+
+        return keys_used
 
     def _fmt_key(self, key: str, cypher_letter: str, indicator: str = "") -> str:
         """Format key"""
@@ -53,11 +66,83 @@ class Enigma:
 
         return fmt_key.strip()
 
-    def encrypt(self, plaintext: str, verbose: bool = False) -> str:
+    def _log_encryption(self, letter: str) -> None:
         """TODO"""
 
+        # list of current top character of each rotor
+        tops: list[str] = [rotor.current_top for rotor in reversed(self.rotors)]
+        # list of positions of current top character of each rotor
+        tops_positions: list[str] = []
+
+        # populate tops_positions list
+        for top in tops:
+            # calculate position; starting from A = 01, B = 02...
+            top_position: int = ord(top) - 64
+            # print to temporary variable formatted number
+            tmp: StringIO = StringIO()
+            print(f"{top_position:02}", file=tmp, end=" ")
+            # add calculated position to list
+            tops_positions.append(tmp.getvalue())
+
+        # Log of how and what encryption was performed
+        print(f"K > {self._fmt_key(key=ascii_uppercase, cypher_letter=letter)}")
+        keys_used: list[str] = self._get_keys()
+
+        cypher_letter: str = letter
+
+        r: int = 0
+
+        for i, key in enumerate(keys_used[:-1]):
+            cypher_letter = key[ord(cypher_letter) - 65]
+            indicator: str = ""
+
+            # plugboard
+            if i == 0 or i == len(keys_used) - 2:
+                indicator = "P"
+            # rotors first pass
+            elif i < len(self.rotors) + 1:
+                r += 1
+                indicator = str(r)
+            # reflector
+            elif i == len(self.rotors) + 1:
+                indicator = "R"
+            # rotors second pass
+            else:
+                indicator = str(r)
+                r -= 1
+
+            print(
+                f"  {self._fmt_key(key=key, cypher_letter=cypher_letter, indicator=indicator)}"
+            )
+
+        print(
+            f"{letter} < {self._fmt_key(key=keys_used[-1], cypher_letter=letter)}",
+            end="\n\n",
+        )
+
+        output: str = f"{self.encryptions:04} {letter} < {keys_used[-1]} {''.join(tops)} {''.join(tops_positions)}"
+        print(output)
+
+    def _turn_rotors(self) -> None:
+        """TODO"""
+
+        # TODO make rotor turning dynamic
+        # TODO support double notch
+        # turn other rotors when current rotor notch is on top
+        if self.rotors[1].current_top == self.rotors[1].notch:
+            self.rotors[1].turn()
+            self.rotors[2].turn()
+
+        if self.rotors[0].current_top == self.rotors[0].notch:
+            self.rotors[1].turn()
+
+        # right-most rotor turns on every key press
+        self.rotors[0].turn()
+
+    def encrypt_wrapper(self, plaintext: str, verbose: bool = False) -> str:
         # input prompt
         cyphertext: str = ""
+        final_key: str = ""
 
         for letter in plaintext:
             # not a letter
@@ -65,118 +150,45 @@ class Enigma:
                 cyphertext += letter
                 continue
 
-            # resulting character mapping key
-            key: str = ascii_uppercase
-            # list of used keys throughout encryption of letter
-            keys_used: list[str] = []
+            self._turn_rotors()
 
-            # TODO make rotor turning dynamic
-            # TODO support double notch
-            # turn other rotors when current rotor notch is on top
-            if self.rotors[1].current_top == self.rotors[1].notch:
-                self.rotors[1].turn()
-                self.rotors[2].turn()
-
-            if self.rotors[0].current_top == self.rotors[0].notch:
-                self.rotors[1].turn()
-
-            # right-most rotor turns on every key press
-            self.rotors[0].turn()
-
-            # the enciphering of a character resulting from the application of
-            # a given component's mapping serves as the input to the mapping of
-            # the subsequent component
-            cypher_letter: str = letter
-
-            keys_used.append(self._fmt_key(key=key, cypher_letter=cypher_letter))
-
-            # substitute letter in plugboard
-            cypher_letter: str = self.plugboard.encrypt_letter(letter)
-
-            # get key for keyboard-plugboard mapping
-            key = self._get_key(rotor=self.plugboard, reverse=False)
-
-            # rotor encryption
-            for i, rotor in enumerate(self.rotors):
-                keys_used.append(
-                    self._fmt_key(
-                        key=key, cypher_letter=cypher_letter, indicator=str(i + 1)
-                    ),
-                )
-
-                cypher_letter: str = rotor.encrypt_letter(cypher_letter)
-                # update key for rotor-rotor mapping
-                key = self._get_key(rotor=rotor, reverse=False)
-
-            keys_used.append(
-                self._fmt_key(key=key, cypher_letter=cypher_letter, indicator="R")
-            )
-
-            # reflect letter
-            cypher_letter: str = self.reflector.encrypt_letter(cypher_letter)
-
-            # update key for rotor-reflector mapping
-            key = self._get_key(rotor=self.reflector, reverse=False)
-
-            # current flowing in reverse direction
-            for i, rotor in enumerate(reversed(self.rotors)):
-                keys_used.append(
-                    self._fmt_key(
-                        key=key, cypher_letter=cypher_letter, indicator=str(i + 1)
-                    )
-                )
-
-                cypher_letter: str = rotor.reverse_encrypt_letter(cypher_letter)
-                # update key for reflector-rotor mapping
-                key = self._get_key(rotor=rotor, reverse=True)
-
-            keys_used.append(
-                self._fmt_key(key=key, cypher_letter=cypher_letter, indicator="P")
-            )
-
-            # substitute letter in plugboard
-            cypher_letter: str = self.plugboard.encrypt_letter(cypher_letter)
-            # final update key for rotor-plugboard mapping
-            key = self._get_key(rotor=self.plugboard, reverse=False)
-
-            keys_used.append(
-                self._fmt_key(
-                    key=key,
-                    cypher_letter=cypher_letter,
-                )
-            )
+            cypher_letter: str = self._encrypt_letter(letter)
 
             # append encrypted letter to enciphered text
             cyphertext += cypher_letter
 
             if verbose:
-                # list of current top character of each rotor
-                tops: list[str] = [rotor.current_top for rotor in reversed(self.rotors)]
-                # list of positions of current top character of each rotor
-                tops_positions: list[str] = []
-
-                # populate tops_positions list
-                for top in tops:
-                    # calculate position; starting from A = 01, B = 02...
-                    top_position: int = ord(top) - 64
-                    # print to temporary variable formatted number
-                    tmp: StringIO = StringIO()
-                    print(f"{top_position:02}", file=tmp, end=" ")
-                    # add calculated position to list
-                    tops_positions.append(tmp.getvalue())
-
-                # Log of how and what encryption was performed
-                print(f"K > {keys_used[0]}")
-                for key in keys_used[1:-1]:
-                    print(f"  {key}")
-                print(f"{letter} < {keys_used[-1]}")
-
-                print()
-
-                output: str = f"{self.encryptions:04} {letter} < {keys_used[-1]} {''.join(tops)} {''.join(tops_positions)}"
-                print(output)
+                self._log_encryption(letter=cypher_letter)
 
             # increment encrypted-letter count by one
             self.encryptions += 1
 
         return cyphertext
+
+    def _encrypt_letter(self, letter: str) -> str:
+        """TODO"""
+
+        # the enciphering of a character resulting from the application of
+        # a given component's mapping serves as the input to the mapping of
+        # the subsequent component
+
+        # substitute letter in plugboard
+        cypher_letter: str = self.plugboard.encrypt_letter(letter)
+
+        # rotor encryption
+        for i, rotor in enumerate(self.rotors):
+            # update key for rotor-rotor mapping
+            cypher_letter: str = rotor.encrypt_letter(cypher_letter)
+
+        # reflect letter
+        cypher_letter: str = self.reflector.encrypt_letter(cypher_letter)
+
+        # current flowing in reverse direction
+        for i, rotor in enumerate(reversed(self.rotors)):
+            # update key for reflector-rotor mapping
+            cypher_letter: str = rotor.reverse_encrypt_letter(cypher_letter)
+
+        # substitute letter in plugboard
+        cypher_letter: str = self.plugboard.encrypt_letter(cypher_letter)
+
+        return cypher_letter
