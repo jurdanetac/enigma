@@ -4,27 +4,9 @@
 
 """TODO"""
 
-import sys
-from typing import Any, Callable
 from machine import Enigma
-
 from rotors import StaticRotor, Rotor, DefaultKeys
-
-
-def quit_safely(func: Callable[..., Any]) -> Callable[..., Any]:
-    """Handle KeyboardInterrupt and EOFError on interactive programs"""
-
-    def aux() -> None:
-        """Auxiliary function"""
-
-        # handle exit signals
-        try:
-            func()
-        # Ctrl-C / Ctrl-D
-        except (KeyboardInterrupt, EOFError):
-            sys.exit(0)
-
-    return aux
+from utils import quit_safely
 
 
 @quit_safely

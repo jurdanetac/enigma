@@ -4,13 +4,9 @@
 
 
 from dataclasses import dataclass
-
 from string import ascii_uppercase
 
-
-def next_char_in_string(string: str, letter: str) -> str:
-    """TODO"""
-    return string[(string.index(letter) + 1) % len(string)]
+from utils import next_char_in_string
 
 
 @dataclass(frozen=True)
