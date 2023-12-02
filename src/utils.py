@@ -25,3 +25,10 @@ def next_char_in_string(string: str, char: str) -> str:
     Raises ValueError if `char` is not in `string`."""
 
     return string[(string.index(char) + 1) % len(string)]
+
+
+def letter_to_number(letter: str) -> int:
+    """Convert a letter to its corresponding number.
+    A -> 0, B -> 1, ..., Z -> 25"""
+
+    return ord(letter) - 65
