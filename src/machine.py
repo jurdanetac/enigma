@@ -2,49 +2,65 @@
 
 # pylint: disable=locally-disabled, fixme, line-too-long
 
-"""TODO"""
+"""Module containing a model of the Enigma machine in a class with methods to encrypt and decrypt text"""
 
-from dataclasses import dataclass
-from io import StringIO
 from string import ascii_uppercase
 from typing import Callable
 
-from rotors import Rotor, StaticRotor
+from rotors import Rotor, Stator
+from utils import letter_to_number
 
 
-@dataclass
 class Enigma:
-    """TODO"""
+    """Model of the Enigma machine"""
 
-    rotors: list[Rotor]
-    plugboard: StaticRotor
-    reflector: StaticRotor
+    def __init__(self, rotors: list[Rotor], plugboard: Stator, reflector: Stator):
+        """Initialize Enigma machine with rotors, plugboard and reflector.
 
-    # keep track of how many layers of encryption a letter pass
-    encryptions: int = 1
+        :param rotors: list of rotors to be used; right-most rotor is the first one in the list
+        :type rotors: list[Rotor]
+        :param plugboard: plugboard to be used
+        :type plugboard: Stator
+        :param reflector: reflector to be used
+        :type reflector: Stator
+        :returns: None
+        :rtype: None
+        :example: Enigma(rotors=[Rotor(...), Rotor(...), Rotor(...)], plugboard=Stator(...), reflector=Stator(...))
+
+        """
+
+        self.rotors = rotors
+        self.plugboard = plugboard
+        self.reflector = reflector
+
+        # keep track of how many letters have been encrypted
+        self.encryptions: int = 0
+        # keep track of each individual encryption step
+        self.last_encryption_log: list[str] = []
 
     def _get_keys(self) -> list[str]:
-        """TODO"""
-        # list of used keys throughout encryption of letter
+        """Return a list of keys used throughout encryption of a letter.
+
+        :returns: list of keys used throughout encryption of a letter
+        :rtype: list[str]
+        :example: self._get_keys() -> ["ABC", "DEF", "GHI", "JKL", "MNO", "PQR", "STU", "VWX"]
+
+        """
+
         keys_used: list[str] = []
 
         def update_keys(getter_func: Callable) -> None:
-            """Update used keys list by appending the return value of the passed function"""
+            """Update used keys list by appending the return value of the passed function.
+
+            :param getter_func: function to be called to get the cypher key
+            :type getter_func: Callable
+            :returns: None
+            :rtype: None
+            :example: update_keys(getter_func=self.plugboard.get_key)
+            """
 
             key = getter_func()
             keys_used.append(key)
-
-        def get_resulting_key() -> str:
-            """Get resulting key after applying all layers of encryption"""
-
-            final_key: str = ""
-
-            for letter in ascii_uppercase:
-                # Pass each alphabet letter by all layers of encryption
-                # to get the resulting key in that particular machine state
-                final_key += self._encrypt_letter(letter)
-
-            return final_key
 
         # append plugboard key
         update_keys(getter_func=self.plugboard.get_key)
@@ -64,86 +80,78 @@ class Enigma:
         update_keys(getter_func=self.plugboard.get_key)
 
         # append resulting key
-        update_keys(getter_func=get_resulting_key)
+        update_keys(getter_func=self.get_resulting_key)
 
         return keys_used
 
-    def _fmt_key(self, key: str, cypher_letter: str, indicator: str = "") -> str:
-        """Format key"""
+    def _fmt_key(
+        self,
+        key: str,
+        letter: str,
+        indicator: str = "",
+        delimiters: tuple = ("(", ")"),
+    ) -> str:
+        """Format a key to be printed to stdout.
 
+        :param key: key to be formatted
+        :type key: str
+        :param letter: letter to find
+        :type letter: str
+        :param indicator: indicator of which encryption layer, defaults to ""
+        :type indicator: str, optional
+        :param delimiters: pair of characters to use to surround the letter in the key, defaults to ("(", ")")
+        :type delimiters: tuple, optional
+        :returns: formatted key to be printed to stdout
+        :rtype: str
+        :raises ValueError: if key is empty or not a string
+        :example: self._fmt_key(key="ABC", letter="B", indicator="1>") -> "1> A(B)C"
+
+        """
+
+        # remove whitespace from key
         key = key.strip()
 
         if not key or not isinstance(key, str):
             return ""
 
-        key_first_half: str = key[: key.index(cypher_letter)]
-        key_second_half: str = key[key.index(cypher_letter) + 1 :]
-        fmt_key: str = f"{indicator} {key_first_half}({cypher_letter}){key_second_half}"
+        # split key into two halves and surround with a delimiter
+        letter_to_find_index: int = letter_to_number(letter)
+        key_first_half: str = key[:letter_to_find_index]
+        key_second_half: str = key[letter_to_find_index + 1 :]
+        fmt_key: str = f"{indicator} {key_first_half}{delimiters[0]}{key[letter_to_find_index]}{delimiters[1]}{key_second_half}"
 
-        return fmt_key.strip()
+        return fmt_key
 
-    def _log_encryption(self, letter: str) -> None:
-        """TODO"""
+    def get_resulting_key(self) -> str:
+        """Get resulting key after applying all layers of encryption for a given machine state.
 
-        # list of current top character of each rotor
-        tops: list[str] = [rotor.current_top for rotor in reversed(self.rotors)]
-        # list of positions of current top character of each rotor
-        tops_positions: list[str] = []
+        :returns: resulting cypher key
+        :rtype: str
+        :example: self.get_resulting_key() -> "IVFKPCUQAXDOTSLEHWNMGBRJZY"
 
-        # populate tops_positions list
-        for top in tops:
-            # calculate position; starting from A = 01, B = 02...
-            top_position: int = ord(top) - 64
-            # print to temporary variable formatted number
-            tmp: StringIO = StringIO()
-            print(f"{top_position:02}", file=tmp, end=" ")
-            # add calculated position to list
-            tops_positions.append(tmp.getvalue())
+        """
 
-        # Log of how and what encryption was performed
-        print(f"K > {self._fmt_key(key=ascii_uppercase, cypher_letter=letter)}")
-        keys_used: list[str] = self._get_keys()
+        final_key: str = ""
 
-        cypher_letter: str = letter
+        for letter in ascii_uppercase:
+            # Pass each alphabet letter by all layers of encryption
+            # to get the resulting key in that particular machine state
+            final_key += self._encrypt_letter(letter)
 
-        current_rotor: int = 0
-
-        for i, key in enumerate(keys_used[:-1]):
-            cypher_letter = key[ord(cypher_letter) - 65]
-            indicator: str = ""
-
-            # plugboard
-            if i in (0, len(keys_used) - 2):
-                indicator = "P"
-            # rotors first pass
-            elif i < len(self.rotors) + 1:
-                current_rotor += 1
-                indicator = str(current_rotor)
-            # reflector
-            elif i == len(self.rotors) + 1:
-                indicator = "R"
-            # rotors second pass
-            else:
-                indicator = str(current_rotor)
-                current_rotor -= 1
-
-            print(
-                f"  {self._fmt_key(key=key, cypher_letter=cypher_letter, indicator=indicator)}"
-            )
-
-        print(
-            f"{letter} < {self._fmt_key(key=keys_used[-1], cypher_letter=letter)}",
-            end="\n\n",
-        )
-
-        output: str = f"{self.encryptions:04} {letter} < {keys_used[-1]} {''.join(tops)} {''.join(tops_positions)}"
-        print(output)
+        return final_key
 
     def _turn_rotors(self) -> None:
-        """TODO"""
+        """Turn adjacent rotor to any one whose turnover is on top.
 
-        # TODO make rotor turning dynamic
+        :returns: None
+        :rtype: None
+        :example: self._turn_rotors()
+
+        """
+
+        # TODO make rotor turning not hardcoded
         # TODO support double notch
+
         # turn other rotors when current rotor notch is on top
         if self.rotors[1].current_top == self.rotors[1].notch:
             self.rotors[1].turn()
@@ -155,35 +163,77 @@ class Enigma:
         # right-most rotor turns on every key press
         self.rotors[0].turn()
 
-    def encrypt_wrapper(self, plaintext: str, verbose: bool = False) -> str:
-        """TODO"""
+    def encrypt_wrapper(
+        self, plaintext: str, verbose: bool = False, should_turn: bool = True
+    ) -> str:
+        """Log and encrypt a plaintext string.
+
+        :param plaintext: text to be encrypted
+        :type plaintext: str
+        :param verbose: whether to print encryption log, defaults to False
+        :type verbose: bool, optional
+        :param should_turn: whether to turn rotors, defaults to True
+        :type should_turn: bool, optional
+        :returns: encrypted text
+        :rtype: str
+        :example: self.encrypt_wrapper(plaintext="HELLO", verbose=True, should_turn=True) -> "IVFKP"
+
+        """
 
         # input prompt
-        cyphertext: str = ""
+        ciphertext: str = ""
 
         for letter in plaintext:
             # not a letter
             if letter not in ascii_uppercase:
-                cyphertext += letter
+                ciphertext += letter
                 continue
 
-            self._turn_rotors()
+            if should_turn is True:
+                self._turn_rotors()
 
-            cypher_letter: str = self._encrypt_letter(letter)
+            # keyboard layer
+            self.last_encryption_log.append(
+                f"{self._fmt_key(key=ascii_uppercase, letter=letter)}"
+            )
+
+            keys_used: list[str] = self._get_keys()
+            cypher_letter = keys_used[0][ord(letter) - 65]
+
+            for key in keys_used[:-1]:
+                # plugboard-rotor-reflector-plugboard layers
+                self.last_encryption_log.append(
+                    f"{self._fmt_key(key=key, letter=cypher_letter)}"
+                )
+
+                cypher_letter = key[ord(cypher_letter) - 65]
 
             # append encrypted letter to enciphered text
-            cyphertext += cypher_letter
+            ciphertext += cypher_letter
 
             if verbose:
-                self._log_encryption(letter=cypher_letter)
+                for entry in self.last_encryption_log:
+                    print(entry)
+
+            self.last_encryption_log.append(
+                f"{cypher_letter} < {self._fmt_key(key=keys_used[-1], letter=cypher_letter)}"
+            )
 
             # increment encrypted-letter count by one
             self.encryptions += 1
 
-        return cyphertext
+        return ciphertext
 
     def _encrypt_letter(self, letter: str) -> str:
-        """TODO"""
+        """Encrypt a single letter.
+
+        :param letter: letter to be encrypted
+        :type letter: str
+        :returns: encrypted letter
+        :rtype: str
+        :example: self._encrypt_letter(letter="A") -> "U"
+
+        """
 
         # the enciphering of a character resulting from the application of
         # a given component's mapping serves as the input to the mapping of

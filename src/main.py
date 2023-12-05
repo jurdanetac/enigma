@@ -2,51 +2,51 @@
 
 # pylint: disable=locally-disabled, fixme, line-too-long
 
-"""TODO"""
+"""Module for CLI interface."""
 
 from machine import Enigma
-from rotors import StaticRotor, Rotor, DefaultKeys
+from rotors import ROTOR_I, ROTOR_II, ROTOR_III, PLUGBOARD_EMPTY, REFLECTOR_B
 from utils import quit_safely
 
 
 @quit_safely
 def main() -> None:
-    """Main program execution"""
+    """This function is executed when the script is run directly.
+    Intended to be used for interactive testing.
+
+    :returns: None
+    :rtype: None
+    :example: main()
+
+    """
 
     machine: Enigma = Enigma(
         rotors=[
             # right-most rotor
-            Rotor(
-                key=DefaultKeys.ROTORS["III"]["key"],
-                notch=DefaultKeys.ROTORS["III"]["notch"],
-                current_top="T",
-                ring_setting="A",
-            ),
+            ROTOR_III,
             # middle rotor
-            Rotor(
-                key=DefaultKeys.ROTORS["II"]["key"],
-                notch=DefaultKeys.ROTORS["II"]["notch"],
-                current_top="D",
-                ring_setting="A",
-            ),
+            ROTOR_II,
             # left-most rotor
-            Rotor(
-                key=DefaultKeys.ROTORS["I"]["key"],
-                notch=DefaultKeys.ROTORS["I"]["notch"],
-                current_top="A",
-                ring_setting="A",
-            ),
+            ROTOR_I,
         ],
-        plugboard=StaticRotor(key=DefaultKeys.PLUGBOARD["empty"]),
-        reflector=StaticRotor(key=DefaultKeys.REFLECTORS["B"]),
+        plugboard=PLUGBOARD_EMPTY,
+        reflector=REFLECTOR_B,
     )
+
+    machine.rotors[0].set_current_top("Z")
 
     while True:
         # input prompt
-        plaintext: str = input(">>> ").strip().upper()
-        cyphertext: str = machine.encrypt_wrapper(plaintext=plaintext, verbose=True)
+        # plaintext: str = input(">>> ").strip().upper()
 
-        print(cyphertext, end="\n\n")
+        # TODO remove auto testing to allow for interactive use
+        plaintext: str = "A"
+        ciphertext: str = machine.encrypt_wrapper(
+            plaintext=plaintext, verbose=True, should_turn=True
+        )
+        print()
+        print(ciphertext)
+        break
 
 
 if __name__ == "__main__":
