@@ -150,8 +150,12 @@ class Rotor(Stator):
 
         """
 
+        # rotate key until letter is on top
         for _ in range(letter_to_number(letter)):
             self.key = self.key[-1] + self.key[:-1]
+
+        # replace current letter on top
+        self.current_top = letter
 
     def encrypt_letter(self, letter: str) -> str:
         """Encrypt a letter using the rotor's character mappings.
