@@ -41,8 +41,18 @@ def main() -> None:
 
         # TODO remove auto testing to allow for interactive use
         plaintext: str = "A"
-        ciphertext: str = machine.encrypt_wrapper(
+        print(
+            machine.rotors[2].current_top,
+            machine.rotors[1].current_top,
+            machine.rotors[0].current_top,
+        )
+        ciphertext: str = machine.encrypt(
             plaintext=plaintext, verbose=True, should_turn=True
+        )
+        print(
+            machine.rotors[2].current_top,
+            machine.rotors[1].current_top,
+            machine.rotors[0].current_top,
         )
         print()
         print(ciphertext)

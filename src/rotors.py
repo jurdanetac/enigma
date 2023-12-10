@@ -3,10 +3,9 @@
 """Module for Enigma's rotors and reflectors."""
 
 
-from dataclasses import dataclass
 from string import ascii_uppercase
 
-from utils import letter_to_number, next_char_in_string
+from utils import check_key, letter_to_number, next_char_in_string
 
 
 class Stator:
@@ -23,57 +22,10 @@ class Stator:
 
     """
 
-    def check_key(self, key: str) -> bool:
-        """Check if key is in valid format.
-
-        :param key: character mappings
-        :type key: str
-        :returns: True if key is in valid format
-        :rtype: bool
-        :raises ValueError: if key is not in valid format
-        :example: stator.check_key("EJMZALYXVBWFCRQUONTSPIKHGD") -> True
-
-        """
-
-        # convert key to uppercase and remove whitespaces
-        key = key.upper().strip()
-
-        ## Check if key is in valid format
-        if self.kind == "reflector":
-            ## Conditions that must be true for reflectors
-            # True if key is a string, False otherwise
-            instance: bool = isinstance(key, str)
-            # True if key has 26 characters, False otherwise
-            length: bool = len(key) == 26
-            # True if key only contains letters, False otherwise
-            alphabetical: bool = key.isalpha()
-            # True if all characters in key are unique, False otherwise
-            unique: bool = len(set(key)) == len(key)
-
-            # check if key is alphabetical and has 26 non-repeating characters
-            if not (instance and length and alphabetical and unique):
-                raise ValueError("Key must be a string of 26 letters.")
-
-            # list of tuples which represent the wirings of the reflector
-            pairs: list[tuple] = [(key[i], chr(i + 65)) for i in range(26)]
-
-            # the wirings are connected as a loop between two letters
-            if len(set(map(tuple, map(sorted, pairs)))) != 13:
-                raise ValueError("Wrong characters mappings.")
-        # plugboard
-        else:
-            ## Conditions that must be true for plugboards
-            # TODO
-            pass
-
-        return True
-
     def __init__(self, key: str, kind: str) -> None:
         """Initialize stator with character mappings."""
 
-        self.kind: str = kind
-
-        if self.check_key(key):
+        if check_key(key, kind):
             self.key: str = key
 
     def encrypt_letter(self, letter: str) -> str:
@@ -91,26 +43,7 @@ class Stator:
 
         return self.key[letter_to_number(letter)]
 
-    def get_key(self) -> str:
-        """Get rotor's character mappings.
 
-        :returns: rotor's character mappings
-        :rtype: str
-        :example: rotor.get_key() -> "EJMZALYXVBWFCRQUONTSPIKHGD"
-
-        """
-
-        # hold output in another variable, since python strings are immutable
-        new_key: str = ""
-
-        for letter in ascii_uppercase:
-            # case current flowing backwards, rotors after reflector
-            new_key += self.encrypt_letter(letter)
-
-        return new_key
-
-
-@dataclass
 class Rotor(Stator):
     """Class that models Enigma's rotors.
     Can be used to create custom rotors, since some defaults are provided
@@ -130,14 +63,24 @@ class Rotor(Stator):
 
     """
 
-    # substitution key
-    key: str
-    # turnover
-    notch: str
-    # initial letter on top
-    current_top: str
-    # wiring offset
-    ring_setting: str
+    def __init__(
+        self, key: str, notch: str, current_top: str, ring_setting: str
+    ) -> None:
+        """Initialize rotor with character mappings and turnover."""
+
+        # initialize stator
+        # super().__init__(key, kind="rotor")
+
+        # check key
+        if check_key(key=key, kind="rotor"):
+            self.key: str = key
+
+        # letter that is visible on top window when turnover happens
+        self.notch: str = notch
+        # letter visible on top window
+        self.current_top: str = current_top
+        # relative wiring offset
+        self.ring_setting: str = ring_setting
 
     def set_current_top(self, letter: str) -> None:
         """Set current letter on top of the rotor.
@@ -146,16 +89,63 @@ class Rotor(Stator):
         :type current_top: str
         :returns: None
         :rtype: None
-        :example: rotor.set_current_top("A")
+        :raises ValueError: if letter is not a single character or not in the alphabet
+        :example: rotor.set_current_top("A") -> None
 
         """
 
-        # rotate key until letter is on top
-        for _ in range(letter_to_number(letter)):
-            self.key = self.key[-1] + self.key[:-1]
+        # convert letter to uppercase and remove whitespaces
+        letter = letter.strip().upper()
+
+        # do nothing if letter is already on top
+        if self.current_top == letter:
+            return
+        elif len(letter) != 1:
+            raise ValueError("Letter must be a single character.")
+        elif letter not in ascii_uppercase:
+            raise ValueError("Letter must be in the alphabet.")
+        elif letter > self.current_top:
+            # rotate key until letter is on top
+            for _ in range(
+                abs(letter_to_number(self.current_top) - letter_to_number(letter))
+            ):
+                self.key = self.key[-1] + self.key[:-1]
+        elif letter < self.current_top:
+            # rotate key backwards until letter is on top
+            for _ in range(
+                letter_to_number(self.current_top) - letter_to_number(letter)
+            ):
+                self.key = self.key[1:] + self.key[0]
 
         # replace current letter on top
         self.current_top = letter
+
+    def turn(self) -> None:
+        """Turn rotor by one letter.
+
+        :returns: None
+        :rtype: None
+        :example: rotor.turn() -> None
+
+        """
+
+        # rotate key by one letter
+        self.key = self.key[1:] + self.key[0]
+
+        # rotate current letter on top by one letter
+        self.current_top = next_char_in_string(ascii_uppercase, self.current_top)
+
+    def reverse_get_key(self) -> str:
+        """Get rotor's character mappings when current's flowing backwards"""
+
+        # hold output in another variable, since python strings are immutable
+        new_key: str = ""
+
+        for letter in ascii_uppercase:
+            # case current flowing backwards, rotors after reflector
+            new_key += self.reverse_encrypt_letter(letter)
+
+        return new_key
 
     def encrypt_letter(self, letter: str) -> str:
         """Encrypt a letter using the rotor's character mappings.
@@ -170,18 +160,11 @@ class Rotor(Stator):
         ltr: str = self.key[letter_to_number(letter)]
         resulting: str = ltr
 
+        # ring setting offset
         for _ in range(letter_to_number(self.ring_setting)):
             resulting = next_char_in_string(ascii_uppercase, resulting)
 
         return resulting
-
-    def turn(self) -> None:
-        """TODO"""
-
-        # Update current letter on top of the rotor
-        self.current_top = next_char_in_string(ascii_uppercase, self.current_top)
-        # Rotate key by one
-        self.key = self.key[-1] + self.key[:-1]
 
     def reverse_encrypt_letter(self, letter: str) -> str:
         """TODO"""
@@ -192,18 +175,6 @@ class Rotor(Stator):
             resulting = next_char_in_string(ascii_uppercase, resulting)
 
         return resulting
-
-    def reverse_get_key(self) -> str:
-        """Get rotor's character mappings when current's flowing backwards"""
-
-        # hold output in another variable, since python strings are immutable
-        new_key: str = ""
-
-        for letter in ascii_uppercase:
-            # case current flowing backwards, rotors after reflector
-            new_key += self.reverse_encrypt_letter(letter)
-
-        return new_key
 
 
 ## Default rotors and reflectors
