@@ -28,8 +28,8 @@ class TestClass(unittest.TestCase):
                 # left-most rotor
                 copy(ROTOR_I),
             ],
-            plugboard=PLUGBOARD_EMPTY,
-            reflector=REFLECTOR_B,
+            plugboard=copy(PLUGBOARD_EMPTY),
+            reflector=copy(REFLECTOR_B),
         )
 
     def test_plugboard(self) -> None:
@@ -42,8 +42,6 @@ class TestClass(unittest.TestCase):
         self.assertEqual(self.machine.plugboard.encrypt_letter(letter="A"), "B")
         # should be A
         self.assertEqual(self.machine.plugboard.encrypt_letter(letter="B"), "A")
-
-        # print("\nPlugboard - OK!")
 
     def test_rotors(self) -> None:
         """Test that rotors works as expected."""
@@ -88,8 +86,6 @@ class TestClass(unittest.TestCase):
             self.machine.rotors[2].reverse_encrypt_letter(letter="B"), "K"
         )
 
-        # print("\nRotor I - OK!")
-
     def test_reflector(self) -> None:
         """Test that reflector works as expected."""
 
@@ -97,8 +93,6 @@ class TestClass(unittest.TestCase):
         self.assertEqual(self.machine.reflector.encrypt_letter(letter="A"), "Y")
         # should be A
         self.assertEqual(self.machine.reflector.encrypt_letter(letter="Y"), "A")
-
-        # print("\nReflector B - OK!")
 
     def test_turnovers(self) -> None:
         """Test that turnover works as expected.
@@ -135,8 +129,6 @@ class TestClass(unittest.TestCase):
                 letters,
             )
 
-        # print("\nTurnover - OK!")
-
     def test_turnoverless_encryption(self) -> None:
         """Test that we can correctly encrypt without turning rotors.
         Test taken from https://www.codesandciphers.org.uk/enigma/example1.htm"""
@@ -152,37 +144,26 @@ class TestClass(unittest.TestCase):
 
         self.assertEqual(ciphertext, ascii_uppercase)
 
-    # def test_encrypt_letter(self) -> None:
-    #     """Test that we can correctly encrypt a letter"""
+    def test_offset(self) -> None:
+        """Test that we can correctly encrypt a string.
+        https://en.wikipedia.org/wiki/Enigma_rotor_details#Rotor_offset"""
 
-    #     plaintext: str = "A"
-    #     print(
-    #         self.machine.rotors[2].current_top, # A
-    #         self.machine.rotors[1].current_top, # A
-    #         self.machine.rotors[0].current_top, # A
-    #     )
-    #     print(
-    #         self.machine.rotors[2].key, # A
-    #         self.machine.rotors[1].key, # A
-    #         self.machine.rotors[0].key, # A
-    #     )
-    #     # should be B
-    #     ciphertext: str = self.machine.encrypt(plaintext=plaintext, should_turn=True, verbose=True)
-    #     print(
-    #         self.machine.rotors[2].current_top, # A
-    #         self.machine.rotors[1].current_top, # A
-    #         self.machine.rotors[0].current_top, # A
-    #     )
-    #     print(
-    #         self.machine.rotors[2].key, # A
-    #         self.machine.rotors[1].key, # A
-    #         self.machine.rotors[0].key, # A
-    #     )
-    #     self.assertEqual(ciphertext, "B")
+        # current state: AAA 01.01.01 with no plugboard changes
+        self.machine.rotors[0] = copy(ROTOR_III)
+        self.machine.rotors[0].times_turned = 0
+        self.machine.rotors[0].current_top = "A"
+        self.machine.rotors[1] = copy(ROTOR_II)
+        self.machine.rotors[1].times_turned = 0
+        self.machine.rotors[1].current_top = "A"
+        self.machine.rotors[2] = copy(ROTOR_I)
+        self.machine.rotors[2].times_turned = 0
+        self.machine.rotors[2].current_top = "A"
 
+        plaintext: str = "AAAAA"
+        ciphertext: str = self.machine.encrypt(plaintext=plaintext, verbose=True, should_turn=True)
 
-# offset
-# https://en.wikipedia.org/wiki/Enigma_rotor_details#Rotor_offset
+        self.assertEqual(ciphertext, "BDZGO")
+
 # ring
 # https://en.wikipedia.org/wiki/Enigma_rotor_details#Ring_setting
 

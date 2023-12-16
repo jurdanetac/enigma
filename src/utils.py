@@ -35,6 +35,24 @@ def quit_safely(func: Callable[..., Any]) -> Callable[..., Any]:
     return aux
 
 
+def prev_char_in_string(string: str, char: str) -> str:
+    """Find previous character of another one in a string.
+
+    :param string: the string to be searched
+    :type string: str
+    :param char: the character to be searched for
+    :type char: str
+    :returns: the previous character before the first occurrence of `char` in `string`
+    :rtype: str
+    :example: prev_char_in_string('ABC', 'B') -> 'A', prev_char_in_string('ABC', 'A') -> 'C'
+    :raises ValueError: raises an exception if `char` is not in `string`
+    :example: prev_char_in_string('ABC', 'D') -> ValueError
+
+    """
+
+    return string[(string.index(char) - 1) % len(string)]
+
+
 def next_char_in_string(string: str, char: str) -> str:
     """Find next character of another one in a string.
 

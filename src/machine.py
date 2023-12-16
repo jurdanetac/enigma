@@ -107,7 +107,7 @@ class Enigma:
             for rotor in self.rotors:
                 # update key for rotor-rotor mapping
                 cypher_letter: str = rotor.encrypt_letter(cypher_letter)
-                self.log.append((rotor.key, old_cypher_letter, cypher_letter))
+                self.log.append((rotor.get_key(), old_cypher_letter, cypher_letter))
                 old_cypher_letter: str = cypher_letter
 
             # reflect letter
@@ -119,7 +119,9 @@ class Enigma:
             for rotor in reversed(self.rotors):
                 # update key for reflector-rotor mapping
                 cypher_letter: str = rotor.reverse_encrypt_letter(cypher_letter)
-                self.log.append((rotor.key, old_cypher_letter, cypher_letter))
+                self.log.append(
+                    (rotor.reverse_get_key(), old_cypher_letter, cypher_letter)
+                )
                 old_cypher_letter: str = cypher_letter
 
             # substitute letter in plugboard
