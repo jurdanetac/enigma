@@ -4,6 +4,8 @@
 
 """Module for CLI interface."""
 
+import sys
+
 from machine import Enigma
 from rotors import ROTOR_I, ROTOR_II, ROTOR_III, PLUGBOARD_EMPTY, REFLECTOR_B
 from utils import quit_safely
@@ -33,30 +35,26 @@ def main() -> None:
         reflector=REFLECTOR_B,
     )
 
-    machine.rotors[0].set_current_top("Z")
+    verbose: bool = False
+
+    if sys.argv[1] == "--verbose":
+        verbose = True
 
     while True:
-        # input prompt
-        # plaintext: str = input(">>> ").strip().upper()
+        # get current settings
+        settings: str = ""
+        for rotor in machine.rotors:
+            settings += f"{rotor.current_top}"
+        settings += "\n"
+        for rotor in machine.rotors:
+            settings += f"{rotor.key}\n"
 
-        # TODO remove auto testing to allow for interactive use
-        plaintext: str = "A"
-        print(
-            machine.rotors[2].current_top,
-            machine.rotors[1].current_top,
-            machine.rotors[0].current_top,
-        )
-        ciphertext: str = machine.encrypt(
-            plaintext=plaintext, verbose=True, should_turn=True
-        )
-        print(
-            machine.rotors[2].current_top,
-            machine.rotors[1].current_top,
-            machine.rotors[0].current_top,
-        )
-        print()
-        print(ciphertext)
-        break
+        # input prompt
+        plaintext: str = input(">>> ").strip().upper()
+
+        print(f"Current settings: {settings}")
+        ciphertext: str = machine.encrypt(plaintext=plaintext, verbose=verbose)
+        print(f"\nEncrypted: {ciphertext}")
 
 
 if __name__ == "__main__":

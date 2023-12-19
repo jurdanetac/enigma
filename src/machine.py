@@ -8,7 +8,7 @@ from string import ascii_uppercase
 
 from rotors import Rotor, Stator
 
-# from utils import letter_to_number
+from utils import format_key
 
 
 class Enigma:
@@ -94,11 +94,15 @@ class Enigma:
             # the enciphering of a character resulting from the application of
             # a given component's mapping serves as the input to the mapping of
             # the subsequent component
-            self.log.append((ascii_uppercase, letter, letter))
+            # self.log.append((ascii_uppercase, letter, letter))
+            self.log.append((format_key(ascii_uppercase, letter), letter, letter))
 
             # substitute letter in plugboard
             cypher_letter: str = self.plugboard.encrypt_letter(letter)
-            self.log.append((self.plugboard.key, letter, cypher_letter))
+            # self.log.append((self.plugboard.key, letter, cypher_letter))
+            self.log.append(
+                (format_key(self.plugboard.key, cypher_letter), letter, cypher_letter)
+            )
 
             # aux for logging
             old_cypher_letter: str = cypher_letter
@@ -107,26 +111,50 @@ class Enigma:
             for rotor in self.rotors:
                 # update key for rotor-rotor mapping
                 cypher_letter: str = rotor.encrypt_letter(cypher_letter)
-                self.log.append((rotor.get_key(), old_cypher_letter, cypher_letter))
+                # self.log.append((rotor.get_key(), old_cypher_letter, cypher_letter))
+                self.log.append(
+                    (
+                        format_key(rotor.get_key(), cypher_letter),
+                        old_cypher_letter,
+                        cypher_letter,
+                    )
+                )
                 old_cypher_letter: str = cypher_letter
 
             # reflect letter
             cypher_letter: str = self.reflector.encrypt_letter(cypher_letter)
-            self.log.append((self.reflector.key, old_cypher_letter, cypher_letter))
+            # self.log.append((self.reflector.key, old_cypher_letter, cypher_letter))
+            self.log.append(
+                (
+                    format_key(self.reflector.key, cypher_letter),
+                    old_cypher_letter,
+                    cypher_letter,
+                )
+            )
             old_cypher_letter: str = cypher_letter
 
             # current flowing in reverse direction
             for rotor in reversed(self.rotors):
                 # update key for reflector-rotor mapping
                 cypher_letter: str = rotor.reverse_encrypt_letter(cypher_letter)
+                # self.log.append(
+                #     (rotor.reverse_get_key(), old_cypher_letter, cypher_letter)
+                # )
                 self.log.append(
-                    (rotor.reverse_get_key(), old_cypher_letter, cypher_letter)
+                    (
+                        format_key(rotor.reverse_get_key(), cypher_letter),
+                        old_cypher_letter,
+                        cypher_letter,
+                    )
                 )
                 old_cypher_letter: str = cypher_letter
 
             # substitute letter in plugboard
             cypher_letter: str = self.plugboard.encrypt_letter(cypher_letter)
-            self.log.append((self.plugboard.key, old_cypher_letter, cypher_letter))
+            # self.log.append((self.plugboard.key, old_cypher_letter, cypher_letter))
+            self.log.append(
+                (format_key(self.plugboard.key, cypher_letter), letter, cypher_letter)
+            )
 
             ciphertext += cypher_letter
 

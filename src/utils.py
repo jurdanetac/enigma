@@ -195,3 +195,38 @@ def switch(string: str, a: str, b: str) -> str:
     """
 
     return string.translate(str.maketrans({a: b, b: a}))
+
+
+def format_key(
+    key: str, cypher_letter: str, indicator: str = "", delimiters=("(", ")")
+) -> str:
+    """Returns a formatted key to be printed to stdout. Encloses the cypher
+    letter in delimiters.
+
+    :param key: key to be formatted
+    :type key: str
+    :param cypher_letter: letter to find
+    :type cypher_letter: str
+    :param indicator: indicator of which encryption layer, defaults to ""
+    :type indicator: str, optional
+    :param delimiters: pair of characters to use to surround the letter in the key, defaults to ("(", ")")
+    :type delimiters: tuple, optional
+    :returns: formatted key to be printed to stdout
+    :rtype: str
+    :example: format_key(key="ABCDE", cypher_letter="B", indicator="1>", delimiters = ("-","-")) -> "1> A-B-CDE"
+
+    """
+
+    key = key.strip()
+
+    if not key or not isinstance(key, str):
+        raise ValueError("key must be a non-empty valid string")
+
+    if len(delimiters) != 2:
+        raise ValueError("delimiters must be a tuple of length 2")
+
+    key_first_half: str = key[: key.index(cypher_letter)]
+    key_second_half: str = key[key.index(cypher_letter) + 1 :]
+    fmt_key: str = f"{indicator} {key_first_half}{delimiters[0]}{cypher_letter}{delimiters[1]}{key_second_half}"
+
+    return fmt_key.strip()
