@@ -77,6 +77,8 @@ class Enigma:
         :example: self.encrypt_wrapper(plaintext="HELLO", verbose=True, should_turn=True) -> "IVFKP"
 
         """
+        self.log = []
+
 
         # result of encryption of `plaintext`
         ciphertext: str = ""
@@ -156,6 +158,8 @@ class Enigma:
                 (format_key(self.plugboard.key, cypher_letter), letter, cypher_letter)
             )
 
+            if self.encryptions % 4 == 0:
+                ciphertext += " "
             ciphertext += cypher_letter
 
             # increment encrypted-letter count by one
