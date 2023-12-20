@@ -37,13 +37,13 @@ def main() -> None:
 
     verbose: bool = False
 
-    if sys.argv[1] == "--verbose":
+    if len(sys.argv) > 1 and sys.argv[1] in ("--verbose", "-v"):
         verbose = True
 
     while True:
         # get current settings
         settings: str = ""
-        for rotor in machine.rotors:
+        for rotor in reversed(machine.rotors):
             settings += f"{rotor.current_top}"
         settings += "\n"
         for rotor in machine.rotors:
